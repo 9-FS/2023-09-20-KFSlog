@@ -1,0 +1,17 @@
+[tool.poetry]
+authors     = ["9FS <pray4spam@googlemail.com>"]
+description = ""
+license     = "MIT"
+name        = "KFSlog"
+readme      = "readme.md"
+repository  = "https://github.com/9-FS/2023-09-20-KFSlog-Library"
+version     = "1.0.0"
+
+[tool.poetry.dependencies]
+KFSfstr  = "^1.0.0"
+colorama = { version = "^0.4.6", optional = true }
+python   = "^3.11.0"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires      = ["poetry-core"]

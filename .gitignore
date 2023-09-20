@@ -1,0 +1,8 @@
+*.bat
+*.exe
+*.log
+*.pyc
+*.token
+/doc_templates/
+/log/
+test.py
