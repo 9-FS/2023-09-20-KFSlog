@@ -2,6 +2,7 @@
 import copy        # deep copy
 import datetime as dt
 import enum
+import functools
 import inspect
 import logging, logging.handlers
 import math
@@ -162,7 +163,7 @@ class _Console_File_Formatter(logging.Formatter):
                 if record.msg[0:1]=="\r":
                     record.msg=record.msg[1:]   # remove carriage return from message
             case _: # if invalid formatter output
-                raise RuntimeError(f"Error in {format.__name__}{inspect.signature(format)}: Invalid formatter output \"{self.init_args['output'].name}\".")
+                raise RuntimeError(f"Error in {format.__name__}{inspect.signature(format)}: Invalid formatter output \"{self.init_args["output"].name}\".")
         
         if overwrite_line_current==False:                           # if we write in line new:
             self.timestamp_previous_line=self.timestamp_previous    # update timestamp previous line to timestamp previously used
@@ -213,15 +214,15 @@ class _TimedFileHandler(logging.handlers.TimedRotatingFileHandler):
         return
 
 
-T=typing.TypeVar("T", bound=typing.Callable)    # pass type hints through decorator, so static type checkers in IDE still work
-def timeit(f: T) -> T:
+def timeit[T: typing.Callable](f: T) -> T:
     """
     Decorates function with "Executing function()...", "Executed function()=result.\\nDuration: t"
     """
 
-    def function_new(*args, **kwargs):          # function modified to return
-        logger: logging.Logger                  # logger
-        y=None                                  # function return value
+    @functools.wraps(f)                 # preserve function name and signature
+    def function_new(*args, **kwargs):  # function modified to return
+        logger: logging.Logger          # logger
+
 
         if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
             logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
@@ -232,34 +233,36 @@ def timeit(f: T) -> T:
         logger.info(f"Executing {f.__name__}{inspect.signature(f)}...")
         t0=dt.datetime.now(dt.timezone.utc)
         try:
-            y=f(*args, **kwargs)    # execute function to decorate
-        except:                     # crashes
+            result=f(*args, **kwargs)   # execute function to decorate
+
+        except Exception as e:      # crash
             t1=dt.datetime.now(dt.timezone.utc)
             execution_time=(t1-t0).total_seconds()
             if f.__name__!="main":  # if not main crashed: error
-                logger.error(f"Tried to execute {f.__name__}{inspect.signature(f)}, but crashed.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+                logger.error(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
             else:                   # if main crashed: critical
-                logger.critical(f"Tried to execute {f.__name__}{inspect.signature(f)}, but crashed.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+                logger.critical(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
             raise                   # forward exception
-        else: 
+        
+        else:   # success
             t1=dt.datetime.now(dt.timezone.utc)
             execution_time=(t1-t0).total_seconds()
-            logger.info(f"Executed {f.__name__}{inspect.signature(f)} = {str(y)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+            logger.info(f"Executed {f.__name__}{inspect.signature(f)} = {str(result)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
         
-        return y
+        return result
     
-    return typing.cast(T, function_new)
+    return function_new # type:ignore
 
 
-T=typing.TypeVar("T", bound=typing.Callable)    # pass type hints through decorator, so static type checkers in IDE still work
-def timeit_async(f: T) -> T:
+def timeit_async[T: typing.Callable](f: T) -> T:
     """
     Decorates function with "Executing function()...", "Executed function()=result.\\nDuration: t"
     """
 
+    @functools.wraps(f)                         # preserve function name and signature
     async def function_new(*args, **kwargs):    # function modified to return
         logger: logging.Logger                  # logger
-        y=None                                  # function return value
+
 
         if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
             logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
@@ -270,20 +273,22 @@ def timeit_async(f: T) -> T:
         logger.info(f"Executing {f.__name__}{inspect.signature(f)}...")
         t0=dt.datetime.now(dt.timezone.utc)
         try:
-            y=await f(*args, **kwargs)  # execute function to decorate
-        except:                         # crashes
+            result=await f(*args, **kwargs) # execute function to decorate
+
+        except Exception as e:      # crash
             t1=dt.datetime.now(dt.timezone.utc)
             execution_time=(t1-t0).total_seconds()
-            if f.__name__!="main":      # if not main crashed: error
-                logger.error(f"Tried to execute {f.__name__}{inspect.signature(f)}, but crashed.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-            else:                       # if main crashed: critical
-                logger.critical(f"Tried to execute {f.__name__}{inspect.signature(f)}, but crashed.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-            raise                       # forward exception
-        else:   
-            t1=dt.datetime.now(dt.timezone.utc)
-            execution_time=(t1-t0).total_seconds()
-            logger.info(f"Executed {f.__name__}{inspect.signature(f)} = {str(y)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+            if f.__name__!="main":  # if not main crashed: error
+                logger.error(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+            else:                   # if main crashed: critical
+                logger.critical(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+            raise                   # forward exception
         
-        return y
+        else:   # success
+            t1=dt.datetime.now(dt.timezone.utc)
+            execution_time=(t1-t0).total_seconds()
+            logger.info(f"Executed {f.__name__}{inspect.signature(f)} = {str(result)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+        
+        return result
     
-    return typing.cast(T, function_new)
+    return function_new # type:ignore
