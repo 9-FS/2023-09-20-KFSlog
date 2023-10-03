@@ -48,7 +48,10 @@ def test_timeit(sleep: int, f_fails: bool) -> None:
 
     class Specific_Exception(Exception):
         pass
-    
+
+
+    setup_logging("", logging.INFO) # setup logging, the implicit setup seems to be unreliable
+
 
     @timeit
     def f() -> None:
@@ -68,7 +71,7 @@ def test_timeit(sleep: int, f_fails: bool) -> None:
         assert f_fails==False           # check that f was not supposed to fail
         assert result==None             # check that result is None
 
-    assert os.path.isfile(f"./log/{now_dt.strftime("%Y-%m-%d")}.log")                   # check that log file exists, for some reason a hypothesis test will not create the file if it does not exist already, create manually and close it
+    assert os.path.isfile(f"./log/{now_dt.strftime("%Y-%m-%d")}.log")                   # check that log file exists
     with open(f"./log/{now_dt.strftime("%Y-%m-%d")}.log", "rt") as log_file:
         log=log_file.read().split("\n")
     assert 4<=len(log)                                                                  # check that at least the 2 log messages from this test are in the log, 4 lines because of duration has own line and empty line at end
