@@ -9,4 +9,5 @@ config/
 doc_templates/
 log/
 
+docker-image.tar
 tests/test.py
