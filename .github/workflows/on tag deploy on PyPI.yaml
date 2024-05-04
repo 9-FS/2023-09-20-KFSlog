@@ -2,6 +2,7 @@ name: On Tag Deploy on PyPI
 env:
   PYPI_URL: https://pypi.org/project/KFSlog/
   PYTHON_VERSION: ^3.12.0
+  RUN_TESTS: false
 on:
   push: 
     tags:
@@ -44,8 +45,9 @@ jobs:
             exit 1
           fi
       
-      # - name: Run Tests
-      #   run: poetry run pytest
+      - name: Run Tests
+        if: ${{env.RUN_TESTS=='true'}}
+        run: poetry run pytest
 
 
   build:
@@ -84,12 +86,12 @@ jobs:
     
 
   deploy:
+    name: Deploy Distributables on PyPI
     env:
       working-directory: ${{github.workspace}}
     environment:
         name: pypi
         url: ${{env.PYPI_URL}}
-    name: Deploy on PyPI
     needs: [build, test]
     permissions:
       id-token: write

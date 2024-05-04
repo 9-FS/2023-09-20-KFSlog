@@ -2,6 +2,7 @@ name: On Tag Release on Github
 env:
   PROJECT_NAME: KFSlog
   PYTHON_VERSION: ^3.12.0
+  RUN_TESTS: false
 on:
   push: 
     tags:
@@ -64,12 +65,13 @@ jobs:
             exit 1
           fi
       
-      # - name: Run Tests
-      #   run: poetry run pytest
+      - name: Run Tests
+        if: ${{env.RUN_TESTS=='true'}}
+        run: poetry run pytest
 
 
   create_release:
-    name: Create Release
+    name: Create Release on Github
     env:
       working-directory: ${{github.workspace}}
     needs: [datetime, test]
