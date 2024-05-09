@@ -1,5 +1,5 @@
 # Copyright (c) 2024 구FS, all rights reserved. Subject to the MIT licence in `licence.md`.
-import copy        # deep copy
+import copy     # deep copy
 import datetime as dt
 import enum
 import functools
@@ -7,8 +7,9 @@ import inspect
 import logging, logging.handlers
 import math
 import os
-import sys         # current system for colour enabling on windows
-import typing      # type hints
+import result   # rust style result of function execution
+import sys      # current system for colour enabling on windows
+import typing   # type hints
 from KFSfstr import KFSfstr # notation technical
 
 
@@ -214,81 +215,175 @@ class _TimedFileHandler(logging.handlers.TimedRotatingFileHandler):
         return
 
 
-def timeit[T: typing.Callable](f: T) -> T:
+def timeit(executions: int=1) -> typing.Callable:
     """
-    Decorates function with "Executing function()...", "Executed function()=result.\\nDuration: t"
-    """
+    If executions is 1: Decorates function with "Executing function()...", "Executed function().\\nΔt=t" and returns the decorated function's result.
+    If executions is greater than 1: Executes function respective number of times and displays total, minimum, maximum, and average execution time, standard deviation, and function success rate, meaning the function has returned normally and not raised an exception. The function's results are returned in a list[result.Result] and have to be unwrapped by the caller.
 
-    @functools.wraps(f)                 # preserve function name and signature
-    def function_new(*args, **kwargs):  # function modified to return
-        logger: logging.Logger          # logger
+    Arguments:
+    - executions: number of times to execute function
 
+    Returns:
+    - decorated function's result, if multiple executions: all function's results wrapped in list[result.Result[...]]
 
-        if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
-            logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
-        else:                                       # if no root logger defined:
-            logger=setup_logging("KFS")             # use KFS default format
-
-
-        logger.info(f"Executing {f.__name__}{inspect.signature(f)}...")
-        t0=dt.datetime.now(dt.timezone.utc)
-        try:
-            result=f(*args, **kwargs)   # execute function to decorate
-
-        except Exception as e:      # crash
-            t1=dt.datetime.now(dt.timezone.utc)
-            execution_time=(t1-t0).total_seconds()
-            if f.__name__!="main":  # if not main crashed: error
-                logger.error(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-            else:                   # if main crashed: critical
-                logger.critical(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-            raise                   # forward exception
-        
-        else:   # success
-            t1=dt.datetime.now(dt.timezone.utc)
-            execution_time=(t1-t0).total_seconds()
-            logger.info(f"Executed {f.__name__}{inspect.signature(f)} = {str(result)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-        
-        return result
-    
-    return function_new # type:ignore
-
-
-def timeit_async[T: typing.Callable](f: T) -> T:
-    """
-    Decorates function with "Executing function()...", "Executed function()=result.\\nDuration: t"
+    Raises:
+    - ValueError: Number of function executions is less than 0.
     """
 
-    @functools.wraps(f)                         # preserve function name and signature
-    async def function_new(*args, **kwargs):    # function modified to return
-        logger: logging.Logger                  # logger
+    def decorator[T: typing.Callable](f: T) -> T:
+        @functools.wraps(f)                                             # preserve function name and signature
+        def function_new(*args, **kwargs):                              # function modified to return
+            exc_times: list[float]=[]                                   # function executions durations
+            logger: logging.Logger                                      # logger
+            results: list[result.Result]=[]                             # results of function executions
+            t0: dt.datetime                                             # function execution start datetime
+            t1: dt.datetime                                             # function execution end datetime
 
 
-        if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
-            logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
-        else:                                       # if no root logger defined:
-            logger=setup_logging("KFS")             # use KFS default format
+            if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
+                logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
+            else:                                       # if no root logger defined:
+                logger=setup_logging("KFS")             # use KFS default format
 
 
-        logger.info(f"Executing {f.__name__}{inspect.signature(f)}...")
-        t0=dt.datetime.now(dt.timezone.utc)
-        try:
-            result=await f(*args, **kwargs) # execute function to decorate
+            if executions<0:     # if number of executions is less than 0:
+                logging.error(f"Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+                raise ValueError(f"Error in {function_new.__name__}{inspect.signature(function_new)}: Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+            if executions==0:    # if number of executions is 0: just return empty
+                return
 
-        except Exception as e:      # crash
-            t1=dt.datetime.now(dt.timezone.utc)
-            execution_time=(t1-t0).total_seconds()
-            if f.__name__!="main":  # if not main crashed: error
-                logger.error(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-            else:                   # if main crashed: critical
-                logger.critical(f"Executing {f.__name__}{inspect.signature(f)} failed with {KFSfstr.full_class_name(e)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
-            raise                   # forward exception
+
+            if executions==1:   # if only 1 execution:
+                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\"...")
+            if 1<executions:    # if multiple executions:
+                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times...")
+
+
+            for _ in range(executions):                         # execute function to decorate executions times
+                t0=dt.datetime.now(dt.timezone.utc)
+                try:
+                    function_result=f(*args, **kwargs)          # execute function to decorate
+                except Exception as e:                          # crash
+                    t1=dt.datetime.now(dt.timezone.utc)
+                    exc_times.append((t1-t0).total_seconds())
+                    results.append(result.Err(e))               # append error result
+                else:                                           # success
+                    t1=dt.datetime.now(dt.timezone.utc)
+                    exc_times.append((t1-t0).total_seconds())
+                    results.append(result.Ok(function_result))  # append success result
+
+            
+            if executions==1:               # if only 1 execution: unwraps result
+                if results[0].is_ok():      # if success:
+                    r=results[0].unwrap()
+                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    logger.debug(f"Result: {r}")
+                    return r
+                else:                       # if crash:
+                    e=results[0].unwrap_err()
+                    if f.__name__!="main":  # if not main crashed: error
+                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    else:                   # if main crashed: critical
+                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    raise e
+            
+            if 1<executions:    # if multiple executions: return list of results, caller has to unwrap them
+                logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
+                            f"ΔT={KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
+                            f"Δt_min={KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
+                            f"Δt_max={KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
+                            f"Δt_avg={KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
+                            f"σ={KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
+                            f"ok={KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
+                logger.debug(f"Results: {results}")
+                return results
         
-        else:   # success
-            t1=dt.datetime.now(dt.timezone.utc)
-            execution_time=(t1-t0).total_seconds()
-            logger.info(f"Executed {f.__name__}{inspect.signature(f)} = {str(result)}.\nDuration: {KFSfstr.notation_tech(execution_time, 4)}s")
+        return function_new # type:ignore
+    return decorator
+
+
+def timeit_async(executions: int=1) -> typing.Callable:
+    """
+    If executions is 1: Decorates function with "Executing function()...", "Executed function().\\nΔt=t" and returns the decorated function's result.
+    If executions is greater than 1: Executes function respective number of times and displays total, minimum, maximum, and average execution time, standard deviation, and function success rate, meaning the function has returned normally and not raised an exception. The function's results are returned in a list[result.Result] and have to be unwrapped by the caller.
+
+    Arguments:
+    - executions: number of times to execute function
+
+    Returns:
+    - decorated function's result, if multiple executions: all function's results wrapped in list[result.Result[...]]
+
+    Raises:
+    - ValueError: Number of function executions is less than 0.
+    """
+
+    def decorator[T: typing.Callable](f: T) -> T:
+        @functools.wraps(f)                                             # preserve function name and signature
+        async def function_new(*args, **kwargs):                        # function modified to return
+            exc_times: list[float]=[]                                   # function executions durations
+            logger: logging.Logger                                      # logger
+            results: list[result.Result]=[]                             # results of function executions
+            t0: dt.datetime                                             # function execution start datetime
+            t1: dt.datetime                                             # function execution end datetime
+
+
+            if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
+                logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
+            else:                                       # if no root logger defined:
+                logger=setup_logging("KFS")             # use KFS default format
+
+
+            if executions<0:     # if number of executions is less than 0:
+                logging.error(f"Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+                raise ValueError(f"Error in {function_new.__name__}{inspect.signature(function_new)}: Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+            if executions==0:    # if number of executions is 0: just return empty
+                return
+
+
+            if executions==1:   # if only 1 execution:
+                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\"...")
+            if 1<executions:    # if multiple executions:
+                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times...")
+
+
+            for _ in range(executions):                         # execute function to decorate executions times
+                t0=dt.datetime.now(dt.timezone.utc)
+                try:
+                    function_result=await f(*args, **kwargs)    # execute function to decorate
+                except Exception as e:                          # crash
+                    t1=dt.datetime.now(dt.timezone.utc)
+                    exc_times.append((t1-t0).total_seconds())
+                    results.append(result.Err(e))               # append error result
+                else:                                           # success
+                    t1=dt.datetime.now(dt.timezone.utc)
+                    exc_times.append((t1-t0).total_seconds())
+                    results.append(result.Ok(function_result))  # append success result
+
+            
+            if executions==1:               # if only 1 execution: unwraps result
+                if results[0].is_ok():      # if success:
+                    r=results[0].unwrap()
+                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    logger.debug(f"Result: {r}")
+                    return r
+                else:                       # if crash:
+                    e=results[0].unwrap_err()
+                    if f.__name__!="main":  # if not main crashed: error
+                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    else:                   # if main crashed: critical
+                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    raise e
+            
+            if 1<executions:    # if multiple executions: return list of results, caller has to unwrap them
+                logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
+                            f"ΔT={KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
+                            f"Δt_min={KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
+                            f"Δt_max={KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
+                            f"Δt_avg={KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
+                            f"σ={KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
+                            f"ok={KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
+                logger.debug(f"Results: {results}")
+                return results
         
-        return result
-    
-    return function_new # type:ignore
+        return function_new # type:ignore
+    return decorator

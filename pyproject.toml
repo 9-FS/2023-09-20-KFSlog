@@ -6,16 +6,17 @@ name        = "KFSlog"
 packages    = [{ include = "KFSlog" }]
 readme      = "readme.md"
 repository  = "https://github.com/9-FS/2023-09-20-KFSlog"
-version     = "1.1.1"
+version     = "2.0.0"
 
 [tool.poetry.dependencies]
 colorama = { version = "^0.4.6", optional = true }
 kfsfstr  = "^1.1.0"
 python   = "^3.12.0"
+result   = "^0.16.0"
 
 [tool.poetry.group.dev.dependencies]
-hypothesis = "^6.87.0"
-pytest     = "^7.4.2"
+hypothesis = "^6.0.0"
+pytest     = "^8.0.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
