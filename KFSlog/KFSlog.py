@@ -217,7 +217,7 @@ class _TimedFileHandler(logging.handlers.TimedRotatingFileHandler):
 
 def timeit(executions: int=1) -> typing.Callable:
     """
-    If executions is 1: Decorates function with "Executing function()...", "Executed function().\\nΔt=t" and returns the decorated function's result.
+    If executions is 1: Decorates function with "Executing function()...", "Executed function().\\nΔt = t" and returns the decorated function's result.
     If executions is greater than 1: Executes function respective number of times and displays total, minimum, maximum, and average execution time, standard deviation, and function success rate, meaning the function has returned normally and not raised an exception. The function's results are returned in a list[result.Result] and have to be unwrapped by the caller.
 
     Arguments:
@@ -276,25 +276,25 @@ def timeit(executions: int=1) -> typing.Callable:
             if executions==1:               # if only 1 execution: unwraps result
                 if results[0].is_ok():      # if success:
                     r=results[0].unwrap()
-                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
                     logger.debug(f"Result: {r}")
                     return r
                 else:                       # if crash:
                     e=results[0].unwrap_err()
                     if f.__name__!="main":  # if not main crashed: error
-                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
                     else:                   # if main crashed: critical
-                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
                     raise e
             
             if 1<executions:    # if multiple executions: return list of results, caller has to unwrap them
                 logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
-                            f"ΔT={KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
-                            f"Δt_min={KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
-                            f"Δt_max={KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
-                            f"Δt_avg={KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
-                            f"σ={KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
-                            f"ok={KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
+                            f"ΔT     = {KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
+                            f"Δt_min = {KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
+                            f"Δt_max = {KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
+                            f"Δt_avg = {KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
+                            f"σ      = {KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
+                            f"ok     = {KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
                 logger.debug(f"Results: {results}")
                 return results
         
@@ -304,7 +304,7 @@ def timeit(executions: int=1) -> typing.Callable:
 
 def timeit_async(executions: int=1) -> typing.Callable:
     """
-    If executions is 1: Decorates function with "Executing function()...", "Executed function().\\nΔt=t" and returns the decorated function's result.
+    If executions is 1: Decorates function with "Executing function()...", "Executed function().\\nΔt = t" and returns the decorated function's result.
     If executions is greater than 1: Executes function respective number of times and displays total, minimum, maximum, and average execution time, standard deviation, and function success rate, meaning the function has returned normally and not raised an exception. The function's results are returned in a list[result.Result] and have to be unwrapped by the caller.
 
     Arguments:
@@ -363,25 +363,25 @@ def timeit_async(executions: int=1) -> typing.Callable:
             if executions==1:               # if only 1 execution: unwraps result
                 if results[0].is_ok():      # if success:
                     r=results[0].unwrap()
-                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
                     logger.debug(f"Result: {r}")
                     return r
                 else:                       # if crash:
                     e=results[0].unwrap_err()
                     if f.__name__!="main":  # if not main crashed: error
-                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
                     else:                   # if main crashed: critical
-                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt={KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
                     raise e
             
             if 1<executions:    # if multiple executions: return list of results, caller has to unwrap them
                 logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
-                            f"ΔT={KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
-                            f"Δt_min={KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
-                            f"Δt_max={KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
-                            f"Δt_avg={KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
-                            f"σ={KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
-                            f"ok={KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
+                            f"ΔT     = {KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
+                            f"Δt_min = {KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
+                            f"Δt_max = {KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
+                            f"Δt_avg = {KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
+                            f"σ      = {KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
+                            f"ok     = {KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
                 logger.debug(f"Results: {results}")
                 return results
         
