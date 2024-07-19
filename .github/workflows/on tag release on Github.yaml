@@ -1,6 +1,6 @@
 name: On Tag Release on Github
 env:
-    PROJECT_NAME: KFSlog
+    PROJECT_NAME: kfslog
     PYTHON_VERSION: ^3.12.0
     RUN_TESTS: false
 on:

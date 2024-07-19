@@ -1,6 +1,6 @@
 name: On Tag Deploy on PyPI
 env:
-    PYPI_URL: https://pypi.org/project/KFSlog/
+    PYPI_URL: https://pypi.org/project/kfslog/
     PYTHON_VERSION: ^3.12.0
     RUN_TESTS: false
 on:

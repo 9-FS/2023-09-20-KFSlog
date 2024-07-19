@@ -32,13 +32,13 @@ files = [
 
 [[package]]
 name = "hypothesis"
-version = "6.100.6"
+version = "6.108.2"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hypothesis-6.100.6-py3-none-any.whl", hash = "sha256:416d2c2b248df6fe71e2ae94b4b475cbaaced4c949929039e0484463dfc30644"},
-    {file = "hypothesis-6.100.6.tar.gz", hash = "sha256:726663fe65c793cd0c092b82ce737940f7da7fa1297a81da898c3317e5a19026"},
+    {file = "hypothesis-6.108.2-py3-none-any.whl", hash = "sha256:2341d21d0e956bad8bd6269aa7d4f3233507f3ed52380c60ceb2f8b71f87a8e5"},
+    {file = "hypothesis-6.108.2.tar.gz", hash = "sha256:62cf1c16bd98548b6a84007c5fb8cf6d9cb358dad870adb4f236c795ef162fdd"},
 ]
 
 [package.dependencies]
@@ -46,10 +46,10 @@ attrs = ">=22.2.0"
 sortedcontainers = ">=2.1.0,<3.0.0"
 
 [package.extras]
-all = ["backports.zoneinfo (>=0.2.1)", "black (>=19.10b0)", "click (>=7.0)", "crosshair-tool (>=0.0.54)", "django (>=3.2)", "dpcontracts (>=0.4)", "hypothesis-crosshair (>=0.0.2)", "lark (>=0.10.1)", "libcst (>=0.3.16)", "numpy (>=1.17.3)", "pandas (>=1.1)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "tzdata (>=2024.1)"]
+all = ["backports.zoneinfo (>=0.2.1)", "black (>=19.10b0)", "click (>=7.0)", "crosshair-tool (>=0.0.61)", "django (>=3.2)", "dpcontracts (>=0.4)", "hypothesis-crosshair (>=0.0.7)", "lark (>=0.10.1)", "libcst (>=0.3.16)", "numpy (>=1.17.3)", "pandas (>=1.1)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "tzdata (>=2024.1)"]
 cli = ["black (>=19.10b0)", "click (>=7.0)", "rich (>=9.0.0)"]
 codemods = ["libcst (>=0.3.16)"]
-crosshair = ["crosshair-tool (>=0.0.54)", "hypothesis-crosshair (>=0.0.2)"]
+crosshair = ["crosshair-tool (>=0.0.61)", "hypothesis-crosshair (>=0.0.7)"]
 dateutil = ["python-dateutil (>=1.4)"]
 django = ["django (>=3.2)"]
 dpcontracts = ["dpcontracts (>=0.4)"]
@@ -75,39 +75,27 @@ files = [
 
 [[package]]
 name = "kfsfstr"
-version = "1.1.2"
+version = "2.0.0"
 description = ""
 optional = false
 python-versions = "<4.0.0,>=3.12.0"
 files = [
-    {file = "kfsfstr-1.1.2-py3-none-any.whl", hash = "sha256:effb79562013d3a84c878ec94252d52f5af4d9eb02183073b04fc584e5a958eb"},
-    {file = "kfsfstr-1.1.2.tar.gz", hash = "sha256:8d4f2d5fa2240f58276f9048e0a6bafcaa3b9e4742db159631ee6d85fab23a2c"},
+    {file = "kfsfstr-2.0.0-py3-none-any.whl", hash = "sha256:bed7bff918ed52dfc68ffcb098392f812aa3b4e6a80ab1de15c6616c93191f9e"},
+    {file = "kfsfstr-2.0.0.tar.gz", hash = "sha256:10e2f9b667d86c5ba466d9b186deac72d9de4ade59e6366413448fb7eac29ad7"},
 ]
 
 [package.dependencies]
 colorama = ">=0.4.0,<0.5.0"
-kfsmath = ">=1.0.0,<2.0.0"
-
-[[package]]
-name = "kfsmath"
-version = "1.0.2"
-description = ""
-optional = false
-python-versions = "<4.0.0,>=3.12.0"
-files = [
-    {file = "kfsmath-1.0.2-py3-none-any.whl", hash = "sha256:03f4fefb420e014faa822e6af5a231023616a8d3d863138fd0f2b8bcbee68b4e"},
-    {file = "kfsmath-1.0.2.tar.gz", hash = "sha256:f2e74102132500c6738c918d0029cd3810c3473cec1ebaebe2df082a66fcde7a"},
-]
 
 [[package]]
 name = "packaging"
-version = "24.0"
+version = "24.1"
 description = "Core utilities for Python packages"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "packaging-24.0-py3-none-any.whl", hash = "sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5"},
-    {file = "packaging-24.0.tar.gz", hash = "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"},
+    {file = "packaging-24.1-py3-none-any.whl", hash = "sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124"},
+    {file = "packaging-24.1.tar.gz", hash = "sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002"},
 ]
 
 [[package]]
@@ -127,13 +115,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pytest"
-version = "8.2.0"
+version = "8.2.2"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.2.0-py3-none-any.whl", hash = "sha256:1733f0620f6cda4095bbf0d9ff8022486e91892245bb9e7d5542c018f612f233"},
-    {file = "pytest-8.2.0.tar.gz", hash = "sha256:d507d4482197eac0ba2bae2e9babf0672eb333017bcedaa5fb1a3d42c1174b3f"},
+    {file = "pytest-8.2.2-py3-none-any.whl", hash = "sha256:c434598117762e2bd304e526244f67bf66bbd7b5d6cf22138be51ff661980343"},
+    {file = "pytest-8.2.2.tar.gz", hash = "sha256:de4bb8104e201939ccdc688b27a89a7be2079b22e2bd2b07f806b6ba71117977"},
 ]
 
 [package.dependencies]
@@ -170,4 +158,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12.0"
-content-hash = "6b27eb7dc333e634695a32cc2777aa6665d8ae4a1c2cbd5ddc1fe57905960821"
+content-hash = "d34cca7bc2b642eabff21bc2745cfd5fe1ec914cbaa2bd669546117cd7cc4f8d"
