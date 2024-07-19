@@ -10,7 +10,7 @@ import os
 import result   # rust style result of function execution
 import sys      # current system for colour enabling on windows
 import typing   # type hints
-from KFSfstr import KFSfstr # notation technical
+from kfsfstr import kfsfstr # notation technical
 
 
 COLORAMA_IMPORTED: bool
@@ -52,7 +52,7 @@ def setup_logging(logger_name: str="",
     logger=logging.getLogger(logger_name)   # create logger with name
     logger.setLevel(logging_level)          # set logging level
     logger.handlers=[]                      # remove all already existing handlers to avoid duplicates
-    
+
     if print_to_console==True:
         console_handler=logging.StreamHandler()
         console_handler.setFormatter(_Console_File_Formatter(_Console_File_Formatter.Output.console, message_format, datefmt=timestamp_format))
@@ -67,7 +67,7 @@ def setup_logging(logger_name: str="",
 
     if COLORAMA_IMPORTED==False:    # if colorama could not be imported: first record of logger will be this warning
         logger.warning("Package \"colorama\" is not installed, logging levels will not be coloured. Fix this with `pip install colorama`.")
-    
+
     return logger   # return logger in case needed
 
 
@@ -83,7 +83,7 @@ class _Console_File_Formatter(logging.Formatter):
     class Output(enum.Enum):    # is this a formatter for console or log file?
         console=enum.auto()
         file   =enum.auto()
-    
+
 
     def __init__(self, output: Output, fmt: str|None=None, datefmt: str|None=None, style: str="%", validate: bool=True, defaults: str|None=None) -> None:
         self.init_args={    # save arguments to forward to actual logging.Formatter later
@@ -99,8 +99,8 @@ class _Console_File_Formatter(logging.Formatter):
         self.timestamp_previous=""      # timestamp used in previous logging call
         self.timestamp_previous_line="" # timestamp used in previous line
         return
-    
-    
+
+
     @staticmethod
     def _dye_logging_level(format: str, logging_level: int) -> str:
         """
@@ -130,21 +130,21 @@ class _Console_File_Formatter(logging.Formatter):
         timestamp_current=dt.datetime.now(dt.timezone.utc).strftime(self.init_args["datefmt"])  # timestamp current
 
         record.msg=str(record.msg)  # convert msg to str, looses the additional data of the original object but is not needed anyways, just used as string here
-        
+
 
         if "\n" in record.msg:          # if newline in message: indent coming lines
             newline_replacement="\n"    # initialise with newline, add preceding spaces next
             number_of_spaces=0          # number of spaces needed for indentation
-            
+
             number_of_spaces+=len(fmt.split(r"%(message)s", 1)[0].replace(r"%(asctime)s", "").replace(r"%(levelname)s", ""))    # static format length without variables, for indentation only consider what is left of first %(message)s
             if r"%(asctime)s" in fmt:                                   # if timestamp in format: determine length
                 number_of_spaces+=len(timestamp_current)
             if r"%(levelname)s" in fmt:                                 # if logging level in format: determine length
                 number_of_spaces+=len(record.levelname)
             for i in range(number_of_spaces):                           # add indentation
-                newline_replacement+=" " 
+                newline_replacement+=" "
             record.msg=record.msg.replace("\n", newline_replacement)    # replace all linebreaks with linebreak + indentation
-        
+
         match self.init_args["output"]:
             case self.Output.console:                                       # if output console:
                 if record.msg.startswith("\r"):                             # if record.msg starts with carriage return: prepare everything for overwriting line previous later
@@ -165,7 +165,7 @@ class _Console_File_Formatter(logging.Formatter):
                     record.msg=record.msg[1:]   # remove carriage return from message
             case _: # if invalid formatter output
                 raise RuntimeError(f"Error in {format.__name__}{inspect.signature(format)}: Invalid formatter output \"{self.init_args["output"].name}\".")
-        
+
         if overwrite_line_current==False:                           # if we write in line new:
             self.timestamp_previous_line=self.timestamp_previous    # update timestamp previous line to timestamp previously used
 
@@ -175,12 +175,12 @@ class _Console_File_Formatter(logging.Formatter):
                 timestamp_replacement+=" "
             fmt=fmt.replace(r"[%(asctime)s]", timestamp_replacement)
 
-        
+
         if self.init_args["output"]==self.Output.console and COLORAMA_IMPORTED==True:                                       # if in console output and colorama imported:
             fmt=_Console_File_Formatter._dye_logging_level(fmt, record.levelno)                                             # dye logging level
-        formatter=logging.Formatter(fmt, self.init_args["datefmt"], self.init_args["style"], self.init_args["validate"])    # create custom formatter 
+        formatter=logging.Formatter(fmt, self.init_args["datefmt"], self.init_args["style"], self.init_args["validate"])    # create custom formatter
         record.msg=formatter.format(record)                                                                                 # finally format message
-        
+
         self.line_previous_len=len(record.msg)      # save line length, so can be overwritten cleanly next call if desired
         self.timestamp_previous=timestamp_current   # timestamp current becomes timestamp previously used for next logging call
         return record.msg                           # return message formatted
@@ -200,7 +200,7 @@ class _TimedFileHandler(logging.handlers.TimedRotatingFileHandler):
         except OSError:
             pass
         self.baseFilename_format=self.baseFilename                      # user argument is interpreted as filepath with datetime format, not static filepath
-        
+
         if self.utc==False:
             self.baseFilename=dt.datetime.now().strftime(self.baseFilename_format)  # set filepath with format and current datetime
         else:
@@ -241,14 +241,14 @@ def timeit(executions: int=1) -> typing.Callable:
 
 
             if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
-                logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
+                logger=logging.getLogger("")            # also use root logger to match formats defined outside kfs
             else:                                       # if no root logger defined:
-                logger=setup_logging("KFS")             # use KFS default format
+                logger=setup_logging("kfs")             # use kfs default format
 
 
             if executions<0:     # if number of executions is less than 0:
-                logging.error(f"Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
-                raise ValueError(f"Error in {function_new.__name__}{inspect.signature(function_new)}: Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+                logging.error(f"Number of function executions is {kfsfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+                raise ValueError(f"Error in {function_new.__name__}{inspect.signature(function_new)}: Number of function executions is {kfsfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
             if executions==0:    # if number of executions is 0: just return empty
                 return
 
@@ -256,7 +256,7 @@ def timeit(executions: int=1) -> typing.Callable:
             if executions==1:   # if only 1 execution:
                 logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\"...")
             if 1<executions:    # if multiple executions:
-                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times...")
+                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\" {kfsfstr.notation_abs(executions, 0, round_static=True)} times...")
 
 
             for _ in range(executions):                         # execute function to decorate executions times
@@ -272,32 +272,32 @@ def timeit(executions: int=1) -> typing.Callable:
                     exc_times.append((t1-t0).total_seconds())
                     results.append(result.Ok(function_result))  # append success result
 
-            
+
             if executions==1:               # if only 1 execution: unwraps result
                 if results[0].is_ok():      # if success:
                     r=results[0].unwrap()
-                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt = {kfsfstr.notation_tech(exc_times[0], 4)}s")
                     logger.debug(f"Result: {r}")
                     return r
                 else:                       # if crash:
                     e=results[0].unwrap_err()
                     if f.__name__!="main":  # if not main crashed: error
-                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {kfsfstr.full_class_name(e)}.\nΔt = {kfsfstr.notation_tech(exc_times[0], 4)}s")
                     else:                   # if main crashed: critical
-                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {kfsfstr.full_class_name(e)}.\nΔt = {kfsfstr.notation_tech(exc_times[0], 4)}s")
                     raise e
-            
+
             if 1<executions:    # if multiple executions: return list of results, caller has to unwrap them
-                logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
-                            f"ΔT     = {KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
-                            f"Δt_min = {KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
-                            f"Δt_max = {KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
-                            f"Δt_avg = {KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
-                            f"σ      = {KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
-                            f"ok     = {KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
+                logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {kfsfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
+                            f"ΔT     = {kfsfstr.notation_tech(sum(exc_times), 4)}s\n"+\
+                            f"Δt_min = {kfsfstr.notation_tech(min(exc_times), 4)}s\n"+\
+                            f"Δt_max = {kfsfstr.notation_tech(max(exc_times), 4)}s\n"+\
+                            f"Δt_avg = {kfsfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
+                            f"σ      = {kfsfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
+                            f"ok     = {kfsfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{kfsfstr.notation_abs(len(results), 0, round_static=True)} ({kfsfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
                 logger.debug(f"Results: {results}")
                 return results
-        
+
         return function_new # type:ignore
     return decorator
 
@@ -328,14 +328,14 @@ def timeit_async(executions: int=1) -> typing.Callable:
 
 
             if 1<=len(logging.getLogger("").handlers):  # if root logger defined handlers:
-                logger=logging.getLogger("")            # also use root logger to match formats defined outside KFS
+                logger=logging.getLogger("")            # also use root logger to match formats defined outside kfs
             else:                                       # if no root logger defined:
-                logger=setup_logging("KFS")             # use KFS default format
+                logger=setup_logging("kfs")             # use kfs default format
 
 
             if executions<0:     # if number of executions is less than 0:
-                logging.error(f"Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
-                raise ValueError(f"Error in {function_new.__name__}{inspect.signature(function_new)}: Number of function executions is {KFSfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+                logging.error(f"Number of function executions is {kfsfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
+                raise ValueError(f"Error in {function_new.__name__}{inspect.signature(function_new)}: Number of function executions is {kfsfstr.notation_abs(executions, 0, round_static=True)}, which is less than 0.")
             if executions==0:    # if number of executions is 0: just return empty
                 return
 
@@ -343,7 +343,7 @@ def timeit_async(executions: int=1) -> typing.Callable:
             if executions==1:   # if only 1 execution:
                 logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\"...")
             if 1<executions:    # if multiple executions:
-                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times...")
+                logger.info(f"Executing \"{f.__name__}{inspect.signature(f)}\" {kfsfstr.notation_abs(executions, 0, round_static=True)} times...")
 
 
             for _ in range(executions):                         # execute function to decorate executions times
@@ -359,31 +359,31 @@ def timeit_async(executions: int=1) -> typing.Callable:
                     exc_times.append((t1-t0).total_seconds())
                     results.append(result.Ok(function_result))  # append success result
 
-            
+
             if executions==1:               # if only 1 execution: unwraps result
                 if results[0].is_ok():      # if success:
                     r=results[0].unwrap()
-                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
+                    logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\".\nΔt = {kfsfstr.notation_tech(exc_times[0], 4)}s")
                     logger.debug(f"Result: {r}")
                     return r
                 else:                       # if crash:
                     e=results[0].unwrap_err()
                     if f.__name__!="main":  # if not main crashed: error
-                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.error(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {kfsfstr.full_class_name(e)}.\nΔt = {kfsfstr.notation_tech(exc_times[0], 4)}s")
                     else:                   # if main crashed: critical
-                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {KFSfstr.full_class_name(e)}.\nΔt = {KFSfstr.notation_tech(exc_times[0], 4)}s")
+                        logger.critical(f"Executing \"{f.__name__}{inspect.signature(f)}\" failed with {kfsfstr.full_class_name(e)}.\nΔt = {kfsfstr.notation_tech(exc_times[0], 4)}s")
                     raise e
-            
+
             if 1<executions:    # if multiple executions: return list of results, caller has to unwrap them
-                logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {KFSfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
-                            f"ΔT     = {KFSfstr.notation_tech(sum(exc_times), 4)}s\n"+\
-                            f"Δt_min = {KFSfstr.notation_tech(min(exc_times), 4)}s\n"+\
-                            f"Δt_max = {KFSfstr.notation_tech(max(exc_times), 4)}s\n"+\
-                            f"Δt_avg = {KFSfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
-                            f"σ      = {KFSfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
-                            f"ok     = {KFSfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{KFSfstr.notation_abs(len(results), 0, round_static=True)} ({KFSfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
+                logger.info(f"Executed \"{f.__name__}{inspect.signature(f)}\" {kfsfstr.notation_abs(executions, 0, round_static=True)} times.\n"+\
+                            f"ΔT     = {kfsfstr.notation_tech(sum(exc_times), 4)}s\n"+\
+                            f"Δt_min = {kfsfstr.notation_tech(min(exc_times), 4)}s\n"+\
+                            f"Δt_max = {kfsfstr.notation_tech(max(exc_times), 4)}s\n"+\
+                            f"Δt_avg = {kfsfstr.notation_tech(sum(exc_times)/len(exc_times), 4)}s\n"+\
+                            f"σ      = {kfsfstr.notation_tech(math.sqrt(sum([(exc_time-sum(exc_times)/len(exc_times))**2 for exc_time in exc_times])/len(exc_times)), 4)}s\n"+\
+                            f"ok     = {kfsfstr.notation_abs(len([r for r in results if r.is_ok()]), 0, round_static=True)}/{kfsfstr.notation_abs(len(results), 0, round_static=True)} ({kfsfstr.notation_abs(len([r for r in results if r.is_ok()])/len(results), 2, round_static=True)})")
                 logger.debug(f"Results: {results}")
                 return results
-        
+
         return function_new # type:ignore
     return decorator
